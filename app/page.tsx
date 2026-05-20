@@ -14,7 +14,7 @@ const ACTIONS = [
   { id: 'weather_guide',  label: '⛈️ Weather Strategy',   desc: 'Read and respond to backcountry weather',    prompt: (v: V) => `Create a comprehensive weather strategy guide for outdoor activities in ${v.location || 'mountain terrain'}. Activity: ${v.activityType || 'hiking'}. Cover: how to read clouds and signs, lightning protocols, flash flood awareness, heat/cold management, wind chill factors, best weather windows, and decision-making frameworks for go/no-go decisions.` },
 ]
 
-type V = Record<string, string>
+interface V { [key: string]: string }
 
 const COMMON_FIELDS = [
   { id: 'location',     label: 'Location / Region', placeholder: 'Rocky Mountains, CO  /  Appalachian Trail, GA' },
@@ -27,7 +27,7 @@ const COMMON_FIELDS = [
 
 export default function OutdoorsPage() {
   const [action, setAction] = useState(ACTIONS[0])
-  const [values, setValues] = useState<V>({})
+  const [values, setValues] = useState({})
   const [output, setOutput] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
