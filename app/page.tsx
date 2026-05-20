@@ -1,62 +1,120 @@
 // app/page.tsx — Javari Outdoors
-// AI-powered outdoor recreation planner — trails, gear, and adventure.
-// May 18, 2026 — CR AudioViz AI, LLC
-export const dynamic = 'force-dynamic'
+// Complete AI outdoor adventure planning — real API calls
+// CR AudioViz AI, LLC · EIN 39-3646201 · May 2026
+'use client'
+import { useState } from 'react'
 
-export default function Home() {
-  const C = '#10b981'
-  const features = ["\ud83e\udd7e AI trail and route recommendations", "\ud83c\udf24\ufe0f Real-time weather integration", "\ud83c\udf92 AI gear recommendations by activity", "\ud83d\uddfa\ufe0f Offline-capable maps and guides", "\ud83d\udea8 Emergency contacts and safety tips"]
-  const competitors = ["AllTrails", "REI", "Komoot"]
-  
+const ACTIONS = [
+  { id: 'trail_planner',  label: '🗺️ Trail Planner',     desc: 'Get personalized trail recommendations',   prompt: (v: V) => `Recommend the best hiking trails in ${v.location || 'the United States'} for a ${v.fitness || 'moderate'} fitness level. Trip duration: ${v.days || '1 day'}. Group: ${v.group || 'solo'}. Interests: ${v.interests || 'scenic views, nature'}. Include: trail names, difficulty, distance, elevation, best season, parking, and key highlights for each.` },
+  { id: 'gear_checklist', label: '🎒 Gear Checklist',     desc: 'Complete packing list for your adventure',  prompt: (v: V) => `Create a comprehensive gear checklist for a ${v.activityType || 'hiking'} trip in ${v.location || 'the mountains'} for ${v.days || '3 days'}. Season: ${v.season || 'summer'}. Experience level: ${v.fitness || 'intermediate'}. Group size: ${v.group || '2 people'}. Organize by: essential gear, clothing, food/water, navigation, safety, and optional items. Include weight considerations.` },
+  { id: 'safety_plan',    label: '⛑️ Safety Plan',        desc: 'Emergency preparedness and risk assessment', prompt: (v: V) => `Create a comprehensive safety and emergency plan for a ${v.activityType || 'backpacking'} trip to ${v.location || 'a remote area'} with ${v.group || '2 people'} for ${v.days || '3 days'}. Include: risk assessment, emergency contacts, navigation basics, weather hazards, wildlife safety, first aid essentials, PLB/satellite communicator guidance, and a trip report template to leave with a contact.` },
+  { id: 'route_optimizer',label: '📍 Route Optimizer',    desc: 'Optimize your itinerary and logistics',      prompt: (v: V) => `Optimize an outdoor itinerary for ${v.days || '3 days'} in ${v.location || 'Yosemite National Park'} for ${v.group || '2 people'}. Activity type: ${v.activityType || 'hiking'}. Fitness: ${v.fitness || 'moderate'}. Priorities: ${v.interests || 'waterfalls, wildlife, sunrise views'}. Include: daily schedule, driving/shuttling logistics, best time windows, and what to skip.` },
+  { id: 'camp_meal_plan', label: '🍳 Camp Meal Plan',      desc: 'Nutritious meal plan for the backcountry',   prompt: (v: V) => `Design a ${v.days || '3'}-day backcountry meal plan for ${v.group || '2 people'} on a ${v.activityType || 'backpacking'} trip. Activity level: ${v.fitness || 'high'}. Dietary restrictions: ${v.dietary || 'none'}. Include: breakfast, lunch, dinner, and snacks for each day, calorie counts, prep instructions, pack weight, and shopping list.` },
+  { id: 'emergency_prep', label: '🆘 Emergency Prep',      desc: 'Build your emergency kit and protocols',     prompt: (v: V) => `Create a complete wilderness emergency preparedness guide for ${v.activityType || 'hiking/camping'} in ${v.location || 'remote terrain'}. Group: ${v.group || '2 people'}. Include: first aid essentials, emergency signaling, shelter-in-place protocols, search-and-rescue process, sat communicator options, and step-by-step emergency action plans for common scenarios.` },
+  { id: 'weather_guide',  label: '⛈️ Weather Strategy',   desc: 'Read and respond to backcountry weather',    prompt: (v: V) => `Create a comprehensive weather strategy guide for outdoor activities in ${v.location || 'mountain terrain'}. Activity: ${v.activityType || 'hiking'}. Cover: how to read clouds and signs, lightning protocols, flash flood awareness, heat/cold management, wind chill factors, best weather windows, and decision-making frameworks for go/no-go decisions.` },
+]
+
+type V = Record<string, string>
+
+const COMMON_FIELDS = [
+  { id: 'location',     label: 'Location / Region', placeholder: 'Rocky Mountains, CO  /  Appalachian Trail, GA' },
+  { id: 'activityType', label: 'Activity Type',     placeholder: 'Hiking, Backpacking, Kayaking, Climbing...' },
+  { id: 'days',         label: 'Trip Duration',     placeholder: '3 days' },
+  { id: 'group',        label: 'Group',             placeholder: 'Solo, 2 people, family with kids...' },
+  { id: 'fitness',      label: 'Fitness Level',     placeholder: 'Beginner, Moderate, Advanced, Expert' },
+  { id: 'interests',    label: 'Priorities / Interests', placeholder: 'Waterfalls, wildlife, summit views...' },
+]
+
+export default function OutdoorsPage() {
+  const [action, setAction] = useState(ACTIONS[0])
+  const [values, setValues] = useState<V>({})
+  const [output, setOutput] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+  const [copied, setCopied] = useState(false)
+
+  function setV(id: string, val: string) { setValues(p => ({ ...p, [id]: val })) }
+
+  async function generate() {
+    setLoading(true); setError(''); setOutput('')
+    try {
+      const res = await fetch('/api/generate', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: action.id, input: action.prompt(values) }),
+      })
+      const data = await res.json() as { result?: string; error?: string }
+      if (!res.ok || data.error) throw new Error(data.error || 'Generation failed')
+      setOutput(data.result || '')
+    } catch (e: unknown) { setError(e instanceof Error ? e.message : 'Something went wrong') }
+    setLoading(false)
+  }
+
   return (
-    <div style={{ background: '#0a0a0f', minHeight: '100vh', color: 'white', fontFamily: 'Inter, system-ui, sans-serif' }}>
-      {/* NAV */}
-      <nav style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100, background: 'rgba(7,7,16,0.97)', backdropFilter: 'blur(12px)', borderBottom: '1px solid rgba(255,255,255,0.06)', height: 58, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 24px' }}>
-        <a href="https://craudiovizai.com" style={{ display: 'flex', alignItems: 'center', gap: 8, textDecoration: 'none' }}>
-          <span style={{ fontSize: 18 }}>🌲</span>
-          <span style={{ fontWeight: 800, fontSize: 15, background: 'linear-gradient(135deg, ' + C + ', #8b5cf6)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Javari Outdoors</span>
+    <div style={{ background: '#060d08', minHeight: '100vh', color: '#dde8d8', fontFamily: '"Outfit", system-ui, sans-serif' }}>
+      <nav style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100, background: 'rgba(6,13,8,0.97)', backdropFilter: 'blur(12px)', borderBottom: '1px solid rgba(34,197,94,0.12)', height: 60, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 28px' }}>
+        <a href="https://craudiovizai.com" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}>
+          <span style={{ fontSize: 22 }}>🌲</span>
+          <span style={{ fontWeight: 800, fontSize: 15, color: '#4ade80', letterSpacing: '-0.02em' }}>Javari Outdoors</span>
         </a>
-        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-          <a href="https://javariai.com" style={{ color: '#6b7280', fontSize: 13, textDecoration: 'none', padding: '5px 10px' }}>Javari AI</a>
-          <a href="https://craudiovizai.com/pricing" style={{ color: '#6b7280', fontSize: 13, textDecoration: 'none', padding: '5px 10px' }}>Pricing</a>
-          <a href="https://craudiovizai.com/auth/signup" style={{ background: 'linear-gradient(135deg, ' + C + ', #8b5cf6)', color: 'white', borderRadius: 8, padding: '8px 18px', fontSize: 13, fontWeight: 700, textDecoration: 'none' }}>Get Started Free →</a>
-        </div>
+        <a href="https://craudiovizai.com/auth/signup" style={{ background: 'linear-gradient(135deg, #16a34a, #166534)', color: 'white', borderRadius: 8, padding: '8px 18px', fontSize: 13, fontWeight: 700, textDecoration: 'none' }}>Free Access →</a>
       </nav>
-      <div style={{ height: 58 }} />
+      <div style={{ height: 60 }} />
 
-      {/* HERO */}
-      <section style={{ textAlign: 'center', padding: '80px 24px 60px', maxWidth: 800, margin: '0 auto' }}>
-        <div style={{ fontSize: 64, marginBottom: 16 }}>🌲</div>
-        <h1 style={{ fontSize: 'clamp(32px, 5vw, 60px)', fontWeight: 900, margin: '0 0 20px', lineHeight: 1.1 }}>
-          Javari Outdoors
+      <section style={{ textAlign: 'center', padding: '52px 24px 36px', maxWidth: 700, margin: '0 auto' }}>
+        <h1 style={{ fontSize: 'clamp(28px,4vw,46px)', fontWeight: 800, margin: '0 0 14px', letterSpacing: '-0.03em', lineHeight: 1.1 }}>
+          AI Adventure <span style={{ color: '#4ade80' }}>Planner</span>
         </h1>
-        <p style={{ fontSize: 18, color: '#9ca3af', lineHeight: 1.6, margin: '0 auto 40px', maxWidth: 560 }}>
-          Trail finder · Gear guides · Weather · Safety · AI planning
+        <p style={{ fontSize: 16, color: '#6b7280', maxWidth: 500, margin: '0 auto', lineHeight: 1.65 }}>
+          Trail recommendations, gear lists, safety plans, and route optimization — 
+          powered by AI. <strong style={{ color: '#4ade80' }}>Free to start.</strong>
         </p>
-        <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap', marginBottom: 16 }}>
-          <a href="https://craudiovizai.com/auth/signup" style={{ background: 'linear-gradient(135deg, ' + C + ', #8b5cf6)', color: 'white', borderRadius: 12, padding: '14px 32px', fontSize: 16, fontWeight: 700, textDecoration: 'none' }}>
-            Start Free — No Card →
-          </a>
-          <a href="https://javariai.com/javari" style={{ background: 'rgba(255,255,255,0.08)', color: 'white', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 12, padding: '14px 24px', fontSize: 16, fontWeight: 700, textDecoration: 'none' }}>
-            🤖 Ask Javari AI
-          </a>
-        </div>
-        <p style={{ color: '#374151', fontSize: 13 }}>✓ 50 free credits/month · ✓ Part of the Javari ecosystem · ✓ CR AudioViz AI</p>
       </section>
 
-      {/* FEATURES */}
-      <section style={{ padding: '40px 24px 80px', maxWidth: 1000, margin: '0 auto' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 16 }}>
-          {features.map(f => (
-            <div key={f} style={{ background: '#111118', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 12, padding: '20px', fontSize: 14, color: '#9ca3af', lineHeight: 1.6 }}>{f}</div>
-          ))}
+      <section style={{ maxWidth: 980, margin: '0 auto', padding: '0 24px 80px', display: 'grid', gridTemplateColumns: 'minmax(0,1fr) minmax(0,1.5fr)', gap: 20, alignItems: 'start' }}>
+        <div>
+          <div style={{ background: '#0c1a0e', border: '1px solid rgba(34,197,94,0.1)', borderRadius: 14, overflow: 'hidden', marginBottom: 20 }}>
+            {ACTIONS.map(a => (
+              <button key={a.id} onClick={() => { setAction(a); setValues({}); setOutput('') }}
+                style={{ width: '100%', textAlign: 'left', padding: '12px 16px', background: action.id === a.id ? 'rgba(34,197,94,0.08)' : 'transparent', borderLeft: action.id === a.id ? '3px solid #22c55e' : '3px solid transparent', border: 'none', cursor: 'pointer', borderBottom: '1px solid rgba(34,197,94,0.05)', display: 'block' }}>
+                <div style={{ fontWeight: 600, fontSize: 13, color: action.id === a.id ? '#86efac' : '#9ca3af' }}>{a.label}</div>
+                <div style={{ fontSize: 11, color: '#374151', marginTop: 2 }}>{a.desc}</div>
+              </button>
+            ))}
+          </div>
+          <div style={{ background: '#0c1a0e', border: '1px solid rgba(34,197,94,0.1)', borderRadius: 14, padding: '18px' }}>
+            {COMMON_FIELDS.map(f => (
+              <div key={f.id} style={{ marginBottom: 12 }}>
+                <label style={{ display: 'block', fontSize: 12, color: '#6b7280', marginBottom: 5, fontWeight: 500 }}>{f.label}</label>
+                <input value={values[f.id] || ''} onChange={e => setV(f.id, e.target.value)} placeholder={f.placeholder}
+                  style={{ width: '100%', background: '#060d08', border: '1px solid rgba(34,197,94,0.15)', borderRadius: 8, padding: '9px 13px', color: '#dde8d8', fontSize: 13, boxSizing: 'border-box', outline: 'none' }} />
+              </div>
+            ))}
+            <button onClick={generate} disabled={loading}
+              style={{ width: '100%', background: loading ? '#0c1a0e' : 'linear-gradient(135deg, #16a34a, #166534)', color: loading ? '#374151' : 'white', border: 'none', borderRadius: 10, padding: '13px', fontSize: 14, fontWeight: 700, cursor: loading ? 'not-allowed' : 'pointer', marginTop: 8 }}>
+              {loading ? '⏳ Planning...' : `Plan with AI: ${action.label}`}
+            </button>
+            {error && <p style={{ color: '#ef4444', fontSize: 13, marginTop: 10 }}>⚠ {error}</p>}
+          </div>
+        </div>
+        <div style={{ background: '#0c1a0e', border: '1px solid rgba(34,197,94,0.1)', borderRadius: 14, overflow: 'hidden', position: 'sticky', top: 80 }}>
+          <div style={{ padding: '14px 18px', borderBottom: '1px solid rgba(34,197,94,0.07)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <span style={{ fontSize: 11, fontWeight: 700, color: '#374151', letterSpacing: '0.08em', textTransform: 'uppercase' }}>AI Plan</span>
+            {output && <button onClick={() => { navigator.clipboard.writeText(output); setCopied(true); setTimeout(() => setCopied(false), 2000) }} style={{ background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.2)', color: copied ? '#4ade80' : '#6b7280', borderRadius: 6, padding: '5px 12px', fontSize: 12, cursor: 'pointer' }}>{copied ? '✓ Copied' : 'Copy'}</button>}
+          </div>
+          {output ? (
+            <textarea value={output} readOnly style={{ width: '100%', background: 'transparent', border: 'none', padding: '20px', color: '#dde8d8', fontSize: 14, lineHeight: 1.75, resize: 'vertical', minHeight: 440, boxSizing: 'border-box', outline: 'none' }} />
+          ) : (
+            <div style={{ padding: '60px 24px', textAlign: 'center' }}>
+              <div style={{ fontSize: 36, marginBottom: 14 }}>{loading ? '⏳' : '🌲'}</div>
+              <p style={{ color: '#1a2e1a', fontSize: 13, lineHeight: 1.7 }}>{loading ? 'Building your adventure plan...' : 'Fill in your trip details
+and select a planning tool.
+3 free credits per generation.'}</p>
+            </div>
+          )}
         </div>
       </section>
-
-      {/* FOOTER */}
-      <footer style={{ background: '#030308', borderTop: '1px solid rgba(255,255,255,0.04)', padding: '32px 24px', textAlign: 'center' }}>
-        <p style={{ color: '#374151', fontSize: 12, margin: '0 0 8px' }}>© 2026 CR AudioViz AI, LLC — EIN: 39-3646201 · Fort Myers, Florida</p>
-        <p style={{ color: '#1f2937', fontSize: 12, margin: 0 }}>Your Story. Our Design. Everyone Connects. Everyone Wins.</p>
+      <footer style={{ background: '#040a06', borderTop: '1px solid rgba(34,197,94,0.06)', padding: '24px', textAlign: 'center' }}>
+        <p style={{ color: '#0c1a0e', fontSize: 12, margin: 0 }}>© 2026 CR AudioViz AI, LLC — EIN: 39-3646201 · Fort Myers, Florida · Your Story. Our Design.</p>
       </footer>
     </div>
   )
