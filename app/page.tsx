@@ -50,7 +50,7 @@ export default function OutdoorsPage() {
   }
 
   return (
-    <div style={{ background: '#060d08', minHeight: '100vh', color: '#dde8d8', fontFamily: '"Outfit", system-ui, sans-serif' }}>
+    <div style={{ background: '#060d08', minHeight: '100vh', color: '#dde8d8', fontFamily: 'Outfit, system-ui, sans-serif' }}>
       <nav style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100, background: 'rgba(6,13,8,0.97)', backdropFilter: 'blur(12px)', borderBottom: '1px solid rgba(34,197,94,0.12)', height: 60, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 28px' }}>
         <a href="https://craudiovizai.com" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}>
           <span style={{ fontSize: 22 }}>🌲</span>
