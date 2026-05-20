@@ -2,7 +2,7 @@
 // Tool definitions extracted from page.tsx to keep JSX parser clean
 // CR AudioViz AI · May 2026
 
-const ACTIONS = [
+export const ACTIONS = [
   { id: 'trail_planner',  label: '🗺️ Trail Planner',     desc: 'Get personalized trail recommendations',   prompt: (v) => `Recommend the best hiking trails in ${v.location || 'the United States'} for a ${v.fitness || 'moderate'} fitness level. Trip duration: ${v.days || '1 day'}. Group: ${v.group || 'solo'}. Interests: ${v.interests || 'scenic views, nature'}. Include: trail names, difficulty, distance, elevation, best season, parking, and key highlights for each.` },
   { id: 'gear_checklist', label: '🎒 Gear Checklist',     desc: 'Complete packing list for your adventure',  prompt: (v) => `Create a comprehensive gear checklist for a ${v.activityType || 'hiking'} trip in ${v.location || 'the mountains'} for ${v.days || '3 days'}. Season: ${v.season || 'summer'}. Experience level: ${v.fitness || 'intermediate'}. Group size: ${v.group || '2 people'}. Organize by: essential gear, clothing, food/water, navigation, safety, and optional items. Include weight considerations.` },
   { id: 'safety_plan',    label: '⛑️ Safety Plan',        desc: 'Emergency preparedness and risk assessment', prompt: (v) => `Create a comprehensive safety and emergency plan for a ${v.activityType || 'backpacking'} trip to ${v.location || 'a remote area'} with ${v.group || '2 people'} for ${v.days || '3 days'}. Include: risk assessment, emergency contacts, navigation basics, weather hazards, wildlife safety, first aid essentials, PLB/satellite communicator guidance, and a trip report template to leave with a contact.` },
@@ -21,3 +21,7 @@ const COMMON_FIELDS = [
   { id: 'fitness',      label: 'Fitness Level',     placeholder: 'Beginner, Moderate, Advanced, Expert' },
   { id: 'interests',    label: 'Priorities / Interests', placeholder: 'Waterfalls, wildlife, summit views...' },
 ]
+
+export function getFields(actionId) {
+  return FIELDS[actionId] || []
+}
