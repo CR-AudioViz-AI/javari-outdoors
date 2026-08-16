@@ -4,9 +4,16 @@
 import type { Metadata } from 'next'
 export const dynamic = 'force-dynamic'
 export const metadata: Metadata = {
+  metadataBase: new URL('https://outdoors.craudiovizai.com'),
+  icons: {
+    icon: [{ url: '/favicon.png', sizes: '32x32' }, { url: '/icon-512.png', sizes: '512x512' }],
+    apple: '/apple-touch-icon.png',
+  },
+
   title: 'Javari Outdoors',
   description: 'Javari Outdoors — powered by Javari AI on the CR AudioViz AI platform',
-  openGraph: { title: 'Javari Outdoors', type: 'website' },
+  twitter: { card: 'summary_large_image', images: ['/og-image.png'] },
+  openGraph: { images: [{ url: '/og-image.png', width: 1200, height: 630 }], title: 'Javari Outdoors', type: 'website' },
 }
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
