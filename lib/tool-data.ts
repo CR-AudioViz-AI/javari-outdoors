@@ -40,8 +40,8 @@ export function getActions(): ToolAction[] {
     { id: 'weather_guide',  label: '⛈️ Weather Strategy', desc: 'Read and respond to backcountry weather',  buildPrompt: function(v: Record<string, string>) { return 'Create a weather strategy guide for outdoor activities in ' + (v.location||'mountain terrain') + '. Activity: ' + (v.activityType||'hiking') + '. Cover: reading clouds and signs, lightning protocols, flash flood awareness, heat/cold management, wind chill, best weather windows, and go/no-go decision frameworks.' } },
   ]
 }
-export function getFields(actionId) {
-  const fields = [
+export function getFields(actionId: string): FieldGroup {
+  const fields: ToolField[] = [
     { id: 'location', label: 'Location / Region', placeholder: 'Rocky Mountains, CO' },
     { id: 'activityType', label: 'Activity Type', placeholder: 'Hiking, Backpacking, Kayaking...' },
     { id: 'days', label: 'Duration', placeholder: '3 days' },
@@ -49,6 +49,8 @@ export function getFields(actionId) {
     { id: 'fitness', label: 'Fitness Level', placeholder: 'Beginner, Moderate, Advanced' },
     { id: 'interests', label: 'Priorities', placeholder: 'Waterfalls, wildlife, summit views...' },
   ]
-  const extra = { camp_meal_plan: [{ id: 'dietary', label: 'Dietary Restrictions', placeholder: 'Vegan, gluten-free, none' }] }
+  // 2026-09-01: typed so the lookup below is not an implicit any index.
+
+  const extra: Record<string, ToolField[]> = { camp_meal_plan: [{ id: 'dietary', label: 'Dietary Restrictions', placeholder: 'Vegan, gluten-free, none' }] }
   return { label: 'Trip Details', fields: [...fields, ...(extra[actionId] || [])] }
 }
